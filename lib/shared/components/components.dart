@@ -62,59 +62,71 @@ Widget defaultButton({
 
 Widget databaseList({required Map model, required context}) => Padding(
       padding: const EdgeInsets.all(20.0),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 40.0,
-            child: Text(
-              '${model['time']}',
-            ),
-          ),
-          const SizedBox(
-            width: 20.0,
-          ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${model['title']}',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontWeight: FontWeight.bold,
-                ),
+      child: Dismissible(
+        key: Key(model['id'].toString()),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 40.0,
+              child: Text(
+                '${model['time']}',
               ),
-              Text(
-                '${model['date']}',
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
+            ),
+            const SizedBox(
+              width: 20.0,
+            ),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${model['title']}',
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${model['date']}',
+                    style: TextStyle(
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-          IconButton(
-            onPressed: () {
-              AppCubit.get(context).updateData(
-                status: 'done',
-                id: model['id'],
-              );
-            },
-            icon: Icon(
-              Icons.check_box,
-              color: Colors.green,
             ),
-          ),
-          IconButton(
-            onPressed: () {
-              AppCubit.get(context).updateData(
-                status: 'archived',
-                id: model['id'],
-              );
-            },
-            icon: Icon(
-              Icons.archive,
-              color: Colors.black38,
+            SizedBox(
+              width: 0.0,
             ),
-          ),
-        ],
+            IconButton(
+              onPressed: () {
+                AppCubit.get(context).updateData(
+                  status: 'done',
+                  id: model['id'],
+                );
+              },
+              icon: Icon(
+                Icons.check_box,
+                color: Colors.green,
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                AppCubit.get(context).updateData(
+                  status: 'archived',
+                  id: model['id'],
+                );
+              },
+              icon: Icon(
+                Icons.archive,
+                color: Colors.black38,
+              ),
+            ),
+          ],
+        ),
+        onDismissed: (direction){
+          AppCubit.get(context).deleteData(id: model['id']);
+        },
       ),
     );

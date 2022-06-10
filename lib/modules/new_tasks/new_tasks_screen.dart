@@ -11,10 +11,10 @@ class NewTasksScreen extends StatelessWidget {
     return BlocConsumer<AppCubit, AppState>(
       listener: (context, state) {},
       builder: (context, state) {
-        var tasks = AppCubit.get(context).tasks;
+        var tasks = AppCubit.get(context).newTasks;
         return ListView.separated(
           itemBuilder: (context, index){
-            print('task status$index: ${tasks[index]['status']}');
+            //print('task status$index: ${tasks[index]['status']}');
             return databaseList(
               model: tasks[index],
               context: context,
@@ -25,7 +25,7 @@ class NewTasksScreen extends StatelessWidget {
             height: 1.0,
             color: Colors.grey,
           ),
-          itemCount: AppCubit.get(context).tasks.length,
+          itemCount: AppCubit.get(context).newTasks.length,
         );
       },
     );

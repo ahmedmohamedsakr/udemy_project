@@ -25,7 +25,9 @@ class AppCubit extends Cubit<AppState> {
   IconData fabIcon = Icons.edit;
   bool isBottomSheet = false;
   Database? database;
-  List<Map> tasks = [];
+  List<Map> newTasks = [];
+  List<Map> doneTasks = [];
+  List<Map> archivedTasks = [];
 
   static AppCubit get(context) => BlocProvider.of(context);
 
@@ -56,10 +58,7 @@ class AppCubit extends Cubit<AppState> {
           );
     }, onOpen: (database) {
       //[3] second database object.
-      getDataFromDatabase(database).then((value) {
-        tasks = value;
-        emit(AppGetDatabaseState());
-      });
+      getDataFromDatabase(database);
       print('database opened.');
     }).then((value) {
       database = value; //[1] Main database object.
@@ -77,28 +76,48 @@ class AppCubit extends Cubit<AppState> {
             'insert into tasks(title,date,time,status) values ("$title","$date","$time","new")'))
         .then((value) {
       emit(AppInsertDatabaseState());
-      getDataFromDatabase(database!).then((value) {
-        tasks = value;
-        emit(AppGetDatabaseState());
-      });
+      getDataFromDatabase(database!);
       print("$value insert successfully.");
     }).catchError((error) =>
             print('error when inserting new record ${error.toString()}.'));
   }
 
-  Future<List<Map>> getDataFromDatabase(Database database) async {
-    emit(AppGetDatabaseLoadingState());   //just to listen for circular.
+  void getDataFromDatabase(Database database) {
+    emit(AppGetDatabaseLoadingState()); //just to listen for circular.
+
+    newTasks = [];
+    archivedTasks = [];
+    doneTasks = [];
     //getting database as parameter because [2] and [3] maybe finish before [1].
-    return await database
-        .rawQuery('SELECT * FROM tasks'); //this query is case sensitive.
+    database.rawQuery('SELECT * FROM tasks').then((value) {
+      value.forEach((element) {
+        if (element['status'] == 'new')
+          newTasks.add(element);
+        else if (element['status'] == 'done')
+          doneTasks.add(element);
+        else
+          archivedTasks.add(element);
+      });
+      emit(AppGetDatabaseState());
+    }); //this query is case sensitive.
   }
 
-  void updateData({required String status,required int id}){
-    database!.rawUpdate(
-        'UPDATE tasks SET status = ? WHERE id = ?',
-       ['$status',id]).then((value){
-         emit(AppUpdateDatabaseState());
+  void updateData({required String status, required int id}) {
+    database!.rawUpdate('UPDATE tasks SET status = ? WHERE id = ?',
+        ['$status', id]).then((value) {
+      getDataFromDatabase(database!);
+      emit(AppUpdateDatabaseState());
     });
   }
+
+  void deleteData({required int id}) {
+    database!.rawUpdate('delete from tasks where id = ?',
+        [id]).then((value) {
+      getDataFromDatabase(database!);
+      emit(AppDeleteDatabaseState());
+    });
+  }
+
+
 
 }
